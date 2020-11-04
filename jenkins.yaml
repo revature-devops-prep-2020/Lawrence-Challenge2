@@ -1,0 +1,67 @@
+credentials:
+    system:
+      domainCredentials:
+      - credentials:
+        - string:
+            description: "Slack Token"
+            id: "slack-token"
+            scope: GLOBAL
+            secret: ${SLACK_TOKEN}
+        - usernamePassword:
+            description: "docker hub"
+            id: "docker_hub_credentials"
+            password: ${DOCKER_HUB_TOKEN}
+            scope: GLOBAL
+            username: ${DOCKER_HUB_USERNAME}
+        - string:
+            description: "sonarcloud token"
+            id: "sonar-token"
+            scope: GLOBAL
+            secret: ${SONAR_TOKEN}
+        - string:
+            description: "kubernetes sa token for using kubectl agent"
+            id: "kube-sa"
+            scope: GLOBAL
+            secret: ${KUBE_SA}
+jenkins:
+  systemMessage: "???vhat??? :)"
+  numExecutors: 2
+  mode: NORMAL
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+       - id: admin
+         password: admin
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+unclassified:
+    slackNotifier:
+      botUser: false
+      room: "#ld-spam"
+      sendAsText: false
+      teamDomain: "${SLACK_TEAM_DOMAIN}"
+      tokenCredentialId: "slack-token"
+    sonarGlobalConfiguration:
+      buildWrapperEnabled: true
+      installations:
+      - credentialsId: "sonar-token"
+        name: "SonarCloud"
+        serverUrl: "https://sonarcloud.io"
+        triggers:
+          skipScmCause: false
+          skipUpstreamCause: false
+tool:
+  git:
+    installations:
+      - home: "git"
+        name: "Default"
+  maven:
+    installations:
+    - name: "maven3"
+      properties:
+      - installSource:
+          installers:
+          - maven:
+              id: "3.5.4"

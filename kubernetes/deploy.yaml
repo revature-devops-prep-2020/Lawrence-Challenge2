@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-service
+  namespace: challenge2
+spec:
+  type: LoadBalancer
+  selector:
+    app: jenkins-pod
+  ports:
+  - port: 80
+    name: jenkins-ui
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-deploy
+  namespace: challenge2
+spec:
+  selector:
+    matchLabels:
+      app: jenkins-pod
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jenkins-pod
+    spec:
+      containers:
+      - name: jenkins
+        image: reblank/jenkins-challenge2
+        envFrom:
+          - secretRef:
+              name: jenkins-secrets
+        env:
+          - name: SLACK_TEAM_DOMAIN
+            value: revaturetrain-cx22851
+        volumeMounts:
+          - mountPath: /var/run/docker.sock
+            name: docker-sock
+          - mountPath: /var/jenkins_home
+            name: jenkins-storage
+        resources:
+          limits:
+            memory: "2.5Gi"
+            cpu: "1500m"
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 8080
+      volumes:
+        - name: docker-sock
+          hostPath:
+              path: /var/run/docker.sock
+        - name: jenkins-storage
+          persistentVolumeClaim:
+            claimName: jenkins-claim
